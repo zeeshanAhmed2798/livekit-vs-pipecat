@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────────────
+#  Ultravox Realtime Agent — LiveKit + Phone Call Support
+#  Python >= 3.10 required
+# ─────────────────────────────────────────────────────────────
+
+# LiveKit Agents + Ultravox realtime plugin
+livekit-agents[ultravox]>=1.0.0
+
+# Silero VAD — voice activity / turn detection
+livekit-agents[silero]>=1.0.0
+
+# Noise cancellation — BVC (web) + BVCTelephony (phone/SIP)
+livekit-agents[noise-cancellation]>=1.0.0
+
+# Env vars
+python-dotenv>=1.0.0
+
+# Async HTTP (used internally by livekit plugins)
+aiohttp>=3.9.0
