@@ -11,7 +11,6 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from livekit import rtc
 from livekit.agents import (
     Agent,
     AgentServer,
@@ -20,10 +19,9 @@ from livekit.agents import (
     JobProcess,
     MetricsCollectedEvent,
     cli,
-    room_io,
 )
 from livekit.agents.metrics import EOUMetrics, LLMMetrics, STTMetrics, TTSMetrics
-from livekit.plugins import noise_cancellation, openai as lk_openai, soniox
+from livekit.plugins import openai as lk_openai, soniox
 from livekit.plugins.silero import VAD
 
 load_dotenv()
@@ -32,7 +30,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger("voxkit-agent")
 
 # ---------------------------------------------------------------------------
-# Shared configuration — keep identical across both test setups
+# Shared configuration
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = (
@@ -134,15 +132,6 @@ async def entrypoint(ctx: JobContext) -> None:
     await session.start(
         agent=VoxKitAgent(),
         room=ctx.room,
-        room_options=room_io.RoomOptions(
-            audio_input=room_io.AudioInputOptions(
-                noise_cancellation=lambda params: (
-                    noise_cancellation.BVCTelephony()
-                    if params.participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP
-                    else noise_cancellation.BVC()
-                ),
-            ),
-        ),
     )
 
     await ctx.connect()
