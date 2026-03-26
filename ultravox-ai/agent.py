@@ -1,6 +1,9 @@
 """
 NY TWO ONE TWO Pizza — Aleena Voice Agent
-LiveKit + Ultravox Realtime + Muskaan (Hindi/Urdu) Voice
+Half-Cascade Architecture:
+  STT + LLM  →  Ultravox Realtime  (output_medium="text")
+  TTS        →  OpenAI nova voice  (gpt-4o-mini-tts)
+
 Run:  python agent.py dev
 """
 
@@ -16,6 +19,7 @@ from livekit.agents import (
     JobProcess,
     cli,
 )
+from livekit.plugins import openai as lk_openai
 from livekit.plugins import silero, ultravox
 
 load_dotenv()
@@ -27,15 +31,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger("aleena-agent")
 
-_REQUIRED = ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET", "ULTRAVOX_API_KEY"]
+_REQUIRED = [
+    "LIVEKIT_URL",
+    "LIVEKIT_API_KEY",
+    "LIVEKIT_API_SECRET",
+    "ULTRAVOX_API_KEY",
+    "OPENAI_API_KEY",        # ← needed for TTS
+]
 for _key in _REQUIRED:
     if not os.getenv(_key):
         raise EnvironmentError(f"Missing env var: {_key}")
 
 AGENT_NAME = os.environ.get("LIVEKIT_AGENT_NAME", "aleena-pizza-agent")
-
-# Muskaan — Casual Hindi/Urdu ElevenLabs voice on Ultravox
-VOICE_ID = "f90da51d-8133-4d19-aa0f-4ec99e14cb85"
 
 SYSTEM_PROMPT = """
 You are Aleena, a friendly, professional female virtual sales agent for NY TWO ONE TWO Pizza, taking customer orders directly. Sound warm, cheerful, confident, and helpful—just like a real pizza expert guiding customers through their order and finalizing it.
@@ -157,18 +164,25 @@ server.setup_fnc = prewarm
 async def entrypoint(ctx: JobContext) -> None:
     logger.info("Session starting | room=%s", ctx.room.name)
 
-    # ── IMPORTANT ─────────────────────────────────────────────────────────────
-    # Only voice is set here. Any additional params (temperature, max_duration,
-    # language_hint, first_speaker, enable_greeting_prompt) cause the plugin to
-    # inject enableGreetingPrompt=false into the API request → HTTP 400.
-    # All agent behavior is controlled via SYSTEM_PROMPT in AleenaAgent above.
-    # ──────────────────────────────────────────────────────────────────────────
+    # ── STT + LLM: Ultravox Realtime (text output only) ───────────────────────
+    # output_medium="text" → Ultravox does STT + LLM but returns TEXT not audio
+    # TTS below handles all speech synthesis instead
     ultravox_model = ultravox.realtime.RealtimeModel(
-        voice=VOICE_ID,
+        voice="Mark",               # voice param still required by plugin
+        output_medium="text",       # ← KEY: disables Ultravox TTS output
     )
 
+    # ── TTS: OpenAI nova voice via gpt-4o-mini-tts ────────────────────────────
+    openai_tts = lk_openai.TTS(
+        model="gpt-4o-mini-tts",    # fastest + cheapest OpenAI TTS model
+        voice="nova",               # nova = warm female voice, best for Urdu/Hindi
+        speed=1.3,                  # speaking speed (1.0 = normal, 1.4 = faster)
+    )
+
+    # ── AgentSession: Ultravox (STT+LLM) + OpenAI (TTS) ──────────────────────
     session = AgentSession(
-        llm=ultravox_model,
+        llm=ultravox_model,         # Ultravox handles listening + thinking
+        tts=openai_tts,             # OpenAI nova handles speaking
         vad=ctx.proc.userdata["vad"],
     )
 
