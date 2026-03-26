@@ -1,7 +1,5 @@
-# Aleena Pizza Agent — Ultravox STT+LLM + OpenAI TTS (half-cascade)
-
-livekit-agents[ultravox]>=1.0.0
 livekit-agents[openai]>=1.0.0
+livekit-agents[soniox]>=1.0.0
 livekit-agents[silero]>=1.0.0
 python-dotenv>=1.0.0
 aiohttp>=3.9.0
