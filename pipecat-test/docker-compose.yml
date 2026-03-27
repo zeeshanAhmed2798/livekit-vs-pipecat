@@ -1,3 +1,5 @@
+name: pipecat_test
+
 services:
   voxkit:
     image: zeeshanahmed2798/voxkit-pipecat:latest
