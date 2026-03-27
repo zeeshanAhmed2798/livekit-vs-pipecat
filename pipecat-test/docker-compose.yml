@@ -1,9 +1,18 @@
 services:
   voxkit:
-    build: .
+    image: zeeshanahmed2798/voxkit-pipecat:latest
     container_name: voxkit-pipecat
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - "8000:8000"
+    environment:
+      DAILY_API_KEY: ${DAILY_API_KEY}
+      DAILY_API_URL: ${DAILY_API_URL}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      SONIOX_API_KEY: ${SONIOX_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PORT: ${PORT}
+
+
+
