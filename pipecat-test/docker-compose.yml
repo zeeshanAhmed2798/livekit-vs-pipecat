@@ -2,6 +2,9 @@ name: pipecat_test
 
 services:
   voxkit:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: zeeshanahmed2798/voxkit-pipecat:latest
     container_name: voxkit-pipecat
     restart: unless-stopped
