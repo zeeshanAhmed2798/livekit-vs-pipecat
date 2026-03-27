@@ -71,7 +71,6 @@ async def run_bot(
             audio_in_enabled=True,
             audio_out_enabled=True,
             video_out_enabled=False,
-            vad_enabled=True,
             vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.3)),
         ),
     )
@@ -115,12 +114,12 @@ async def run_bot(
 
     llm = OpenAILLMService(
         api_key=os.getenv("OPENAI_API_KEY"),
-        model=OPENAI_MODEL,
+        settings=OpenAILLMService.Settings(model=OPENAI_MODEL),
     )
 
     tts = OpenAITTSService(
         api_key=os.getenv("OPENAI_API_KEY"),
-        voice=OPENAI_TTS_VOICE,
+        settings=OpenAITTSService.Settings(voice=OPENAI_TTS_VOICE),
     )
 
     # --- Conversation context with system prompt + initial greeting ---
