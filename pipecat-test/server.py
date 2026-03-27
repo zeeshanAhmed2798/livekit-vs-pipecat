@@ -160,7 +160,7 @@ async def handle_incoming_call(request: Request):
         # to forward audio to Daily's SIP endpoint
         twiml = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Play loop="10">http://com.twilio.sounds.music.s3.amazonaws.com/ClockworkWaltz.mp3</Play>
+    <Play loop="0">http://com.twilio.sounds.music.s3.amazonaws.com/ClockworkWaltz.mp3</Play>
 </Response>"""
 
         logger.info("Returning hold music TwiML for call %s", call_sid)
