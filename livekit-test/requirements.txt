@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # VoxKit LiveKit Test — Python dependencies
+=======
+# VoxKit LiveKit Test - Python dependencies
+>>>>>>> 2ee7d04756d0aa783e99acb9634bd1da51f0b4b3
 # Install: pip install -r requirements.txt
 
 # Core framework

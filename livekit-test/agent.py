@@ -8,13 +8,20 @@ Run:  python agent.py dev
 """
 
 import logging
+<<<<<<< HEAD
 from dotenv import load_dotenv
 
+=======
+import os
+
+from dotenv import load_dotenv
+>>>>>>> 2ee7d04756d0aa783e99acb9634bd1da51f0b4b3
 from livekit.agents import (
     Agent,
     AgentServer,
     AgentSession,
     JobContext,
+<<<<<<< HEAD
     cli,
 )
 from livekit.plugins import openai, soniox, silero
@@ -26,6 +33,23 @@ logger.setLevel(logging.INFO)
 
 # ---------------------------------------------------------------------------
 # Shared configuration — keep identical across both test setups
+=======
+    JobProcess,
+    MetricsCollectedEvent,
+    cli,
+)
+from livekit.agents.metrics import EOUMetrics, LLMMetrics, STTMetrics, TTSMetrics
+from livekit.plugins import openai as lk_openai, soniox
+from livekit.plugins.silero import VAD
+
+load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+logger = logging.getLogger("voxkit-agent")
+
+# ---------------------------------------------------------------------------
+# Shared configuration
+>>>>>>> 2ee7d04756d0aa783e99acb9634bd1da51f0b4b3
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = (
@@ -38,14 +62,37 @@ SYSTEM_PROMPT = (
 OPENAI_MODEL = "gpt-4o"
 OPENAI_TTS_VOICE = "nova"
 SONIOX_LANGUAGES = ["en", "ur"]
+<<<<<<< HEAD
 
 # ---------------------------------------------------------------------------
 # Agent server setup
+=======
+AGENT_NAME = os.environ.get("LIVEKIT_AGENT_NAME", "voxkit-test-agent")
+
+
+# ---------------------------------------------------------------------------
+# Agent definition
+# ---------------------------------------------------------------------------
+
+class VoxKitAgent(Agent):
+    def __init__(self) -> None:
+        super().__init__(instructions=SYSTEM_PROMPT)
+
+    async def on_enter(self) -> None:
+        await self.session.generate_reply(
+            instructions="Greet the caller warmly. Say hello and ask how you can help them today."
+        )
+
+
+# ---------------------------------------------------------------------------
+# Server + prewarm
+>>>>>>> 2ee7d04756d0aa783e99acb9634bd1da51f0b4b3
 # ---------------------------------------------------------------------------
 
 server = AgentServer()
 
 
+<<<<<<< HEAD
 @server.rtc_session(agent_name="voxkit-test-agent")
 async def entrypoint(ctx: JobContext) -> None:
     """
@@ -87,6 +134,77 @@ async def entrypoint(ctx: JobContext) -> None:
     )
 
     logger.info("Agent session started — greeting sent")
+=======
+def prewarm(proc: JobProcess) -> None:
+    proc.userdata["vad"] = VAD.load(
+        min_silence_duration=0.3,
+        min_speech_duration=0.05,
+        activation_threshold=0.2,
+    )
+    logger.info("VAD prewarmed")
+
+
+server.setup_fnc = prewarm
+
+
+# ---------------------------------------------------------------------------
+# Metrics logging
+# ---------------------------------------------------------------------------
+
+def on_metrics(ev: MetricsCollectedEvent) -> None:
+    m = ev.metrics
+    if isinstance(m, EOUMetrics):
+        logger.info(
+            "[EOU] end_of_utterance=%.0fms | transcription=%.0fms",
+            m.end_of_utterance_delay * 1000, m.transcription_delay * 1000,
+        )
+    elif isinstance(m, STTMetrics):
+        logger.info(
+            "[STT] audio=%.0fms | processing=%.0fms | streamed=%s",
+            m.audio_duration * 1000, m.duration * 1000, m.streamed,
+        )
+    elif isinstance(m, LLMMetrics):
+        logger.info(
+            "[LLM] TTFT=%.0fms | total=%.0fms | tokens=%d",
+            m.ttft * 1000, m.duration * 1000, m.total_tokens,
+        )
+    elif isinstance(m, TTSMetrics):
+        logger.info(
+            "[TTS] TTFB=%.0fms | total=%.0fms | audio=%.0fms",
+            m.ttfb * 1000, m.duration * 1000, m.audio_duration * 1000,
+        )
+
+
+# ---------------------------------------------------------------------------
+# RTC session entrypoint
+# ---------------------------------------------------------------------------
+
+@server.rtc_session(agent_name=AGENT_NAME)
+async def entrypoint(ctx: JobContext) -> None:
+    ctx.log_context_fields = {"room": ctx.room.name}
+    logger.info("Session starting | room=%s", ctx.room.name)
+
+    session = AgentSession(
+        stt=soniox.STT(
+            params=soniox.STTOptions(
+                language_hints=SONIOX_LANGUAGES,
+            ),
+        ),
+        llm=lk_openai.LLM(model=OPENAI_MODEL),
+        tts=lk_openai.TTS(voice=OPENAI_TTS_VOICE),
+        vad=ctx.proc.userdata["vad"],
+    )
+
+    session.on("metrics_collected", on_metrics)
+
+    await session.start(
+        agent=VoxKitAgent(),
+        room=ctx.room,
+    )
+
+    await ctx.connect()
+    logger.info("Session ready | room=%s", ctx.room.name)
+>>>>>>> 2ee7d04756d0aa783e99acb9634bd1da51f0b4b3
 
 
 # ---------------------------------------------------------------------------
@@ -94,4 +212,8 @@ async def entrypoint(ctx: JobContext) -> None:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     cli.run_app(server)
+=======
+    cli.run_app(server)
+>>>>>>> 2ee7d04756d0aa783e99acb9634bd1da51f0b4b3
