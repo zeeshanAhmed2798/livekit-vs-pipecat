@@ -1,0 +1,9 @@
+services:
+  voxkit:
+    build: .
+    container_name: voxkit-pipecat
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
