@@ -16,3 +16,8 @@ twilio>=9.0.0
 
 # Environment
 python-dotenv>=1.0.0
+
+# FastAPI form parsing for Twilio webhooks
+python-multipart>=0.0.9
+
+
