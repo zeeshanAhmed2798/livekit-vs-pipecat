@@ -156,7 +156,7 @@ async def run_bot(
 
     task = PipelineTask(
         pipeline,
-        PipelineParams(
+        params=PipelineParams(
             allow_interruptions=True,
             enable_metrics=True,
         ),
