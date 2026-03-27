@@ -24,7 +24,7 @@ from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.services.openai.tts import OpenAITTSService
 from pipecat.services.soniox.stt import SonioxSTTService
-from pipecat.transports.daily import DailyTransport, DailyParams
+from pipecat.transports.daily.transport import DailyTransport, DailyParams
 
 load_dotenv()
 
