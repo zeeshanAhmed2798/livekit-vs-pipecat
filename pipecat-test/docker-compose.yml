@@ -5,8 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: zeeshanahmed2798/voxkit-pipecat:latest
-    container_name: voxkit-pipecat
     restart: unless-stopped
     ports:
       - "8000:8000"
